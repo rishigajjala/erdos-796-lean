@@ -1,0 +1,870 @@
+\documentclass[11pt,reqno]{article}
+
+\usepackage[margin=1.08in,headheight=14pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,tabularx,array}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{linkblue}{RGB}{24,65,117}
+\hypersetup{
+  unicode=true,
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue,
+  pdftitle={On Erd\H{o}s's Multiplicative Representation Problem},
+  pdfauthor={Rishikesh Gajjala},
+  pdfsubject={Extremal multiplicative number theory},
+  pdfkeywords={multiplicative representation, multiplicative Sidon set, semiprime}
+}
+
+\linespread{1.04}
+\allowdisplaybreaks
+\setlength{\parindent}{1.25em}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{2em}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{claim}[theorem]{Claim}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\N}{\mathbb N}
+\newcommand{\Ucal}{\mathcal U}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}
+\newcommand{\abs}[1]{\left|#1\right|}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Erd\H{o}s's multiplicative representation problem}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.35pt}
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyhead[L]{\small Erd\H{o}s's multiplicative representation problem}
+  \fancyhead[R]{\small\thepage}
+  \renewcommand{\headrulewidth}{0.35pt}
+}
+
+\title{\bfseries On Erd\H{o}s's\\
+Multiplicative Representation Problem}
+\author{Rishikesh Gajjala\\[2pt]
+\small NYU Abu Dhabi}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+
+\begin{abstract}
+Let \(g_3(n)\) be the largest size of a set \(A\subseteq[n]\) for which every
+integer has at most two representations \(m=ab\) with \(a,b\in A\) and
+\(a<b\).
+We prove
+\[
+  g_3(n)
+  =\frac{n\log\log n}{\log n}
+   +\left(1+M+\Gamma+o(1)\right)\frac{n}{\log n},
+\]
+where \(M\) is the Meissel--Mertens constant and \(\Gamma\) is a finite
+constant defined by a discrete cofactor problem.  This resolves a
+five-decade-old problem posed by Erd\H{o}s. The initial proofs were generated
+and formalized in Lean by OpenAI's GPT 5.6 Sol; the authors have verified and
+rewritten proofs to enhance readability and provide additional context.
+\end{abstract}
+
+\medskip
+\noindent\textbf{2020 Mathematics Subject Classification.}
+Primary 11B83; secondary 05D05, 11N37.
+
+\smallskip
+\noindent\textbf{Keywords.}
+Multiplicative representation, multiplicative Sidon set, extremal
+hypergraph, semiprime, variational constant.
+
+\section{Introduction}
+
+Write \([n]=\{1,\ldots,n\}\), and let
+\[
+  \rho_A(m)=\#\{(a,b):a,b\in A,\ a<b,\ ab=m\}
+\]
+and
+\[
+  g_3(n)=\max\{|A|:A\subseteq[n],\ \rho_A(m)\leq2\text{ for all }m\}.
+\]
+Erd\H{o}s proved \cite{Erdos1964Multiplicative} that
+\[
+  g_3(n)\sim\frac{n\log\log n}{\log n}.
+\]
+Erd\H{o}s posed the second-order question underlying Problem 796 in his
+1969 paper \emph{Problems and results in chromatic graph theory}
+\cite{Erdos1969Chromatic}.  In its corrected modern form
+\cite{BloomErdos796}, it asks whether
+\[
+  g_3(n)=\frac{n\log\log n}{\log n}
+  +(c+o(1))\frac{n}{\log n}.
+\]
+
+Let
+\[
+  M=\lim_{x\to\infty}
+  \left(\sum_{p\leq x}\frac1p-\log\log x\right)
+\]
+be the Meissel--Mertens constant.  Our main result is the following.
+
+In a January 2026 note, Tang \cite{Tang2026Erdos796} identified the corrected
+second-order scale and gave a construction proving
+\[
+  g_3(n)\geq\frac{n\log\log n}{\log n}
+  +(1+M+o(1))\frac n{\log n}.
+\]
+We prove that the second-order constant exists, identify it as
+\(1+M+\Gamma\), and give the explicit bounds
+\[
+  \frac4{15}\leq\Gamma<13.
+\]
+
+\begin{theorem}\label{thm:main}
+There is a finite constant \(\Gamma\) satisfying
+\[
+  \frac4{15}\leq\Gamma<13
+\]
+such that
+\[
+  g_3(n)
+  =\frac{n\log\log n}{\log n}
+   +\left(1+M+\Gamma+o(1)\right)\frac{n}{\log n}.
+\]
+Thus the answer is yes, with \(c=1+M+\Gamma\), and
+\[
+  1.5281638795\ldots
+  =1+M+\frac4{15}\leq c<15.
+\]
+\end{theorem}
+
+The proof has three parts.  First, a pruning argument leaves two normal
+forms: a large prime times a smooth cofactor, and a small multiplier times
+two large primes.  A \(C_4\)-overlap argument absorbs the second form into
+the semiprime baseline, while the first is encoded by compatible cofactor
+families.  Finally, the resulting finite optimization problems converge to
+a fixed constant \(\Gamma\).
+
+The pruning and complete-box mechanism refine Erd\H{o}s's proof of the
+leading-order asymptotic \cite[Lemma, pp.~252--253; proof of Theorem~3,
+pp.~255--261]
+{Erdos1964Multiplicative}.  Erd\H{o}s already split integers by the sizes of
+their factors and used a multipartite hypergraph box to force many equal
+products.  Here that strategy is sharpened to retain terms of order
+\(n/\log n\).  The additional ingredients are the \(C_4\)-overlap
+normalization, the compatible-cofactor variational model, the global
+collision cleaning, and the finite certificate.  The formulation and its
+correction history are summarized in \cite{BloomErdos796}.
+
+The Mertens component follows the Abel-summation route in Goldmakher's
+\emph{A quick proof of Mertens' theorem} \cite{GoldmakherMertens}, as
+formalized in the \texttt{PrimeNumberTheoremAnd} library.  The accompanying
+Lean development, including the explicit numerical certificates, is
+available at
+\url{https://github.com/rishigajjala/erdos-796-lean}.
+
+Throughout the paper, all logarithms are natural.  The functions \(\pi(x)\)
+and \(P^+(a)\) denote the prime-counting function and the largest prime
+factor of \(a\), respectively, with \(P^+(1)=1\).  An integer is
+\(z\)-smooth if all its prime factors are at most \(z\); thus \(1\) is
+\(z\)-smooth.  Constants implicit in \(O(\cdot)\) and \(\ll\) are absolute
+unless a dependence is displayed.
+
+\section{Compatible cofactor families}\label{sec:model}
+
+For finite sets \(U,V\subseteq\N\), define the ordered product convolution
+\[
+  r_{U,V}(m)
+  =\#\{(u,v)\in U\times V:uv=m\}.
+\]
+
+\begin{definition}\label{def:compatible}
+A sequence \(\Ucal=(U_j)_{j\geq1}\) is \emph{compatible} if
+\[
+  U_j\subseteq[j]
+  \quad\text{and}\quad
+  r_{U_i,U_j}(m)\leq2
+  \qquad(i,j,m\geq1).
+\]
+\end{definition}
+
+When \(i=j\), compatibility says that \(U_i\) has at most one unordered
+factorization of any integer, with diagonal factorizations included.  Indeed,
+two distinct off-diagonal factorizations give four ordered pairs, whereas a
+diagonal and an off-diagonal factorization give three.
+
+For \(j\geq1\), put
+\begin{equation}\label{eq:Nj}
+  N_j(n)=\#\left\{\sqrt n<q\leq n:q\text{ prime and }
+      \floor{\frac nq}=j\right\},
+\end{equation}
+and define
+\begin{equation}\label{eq:Gn}
+  G(n)=\max_{\Ucal\ {\rm compatible}}
+       \sum_{j\geq1}N_j(n)\abs{U_j}.
+\end{equation}
+Only \(j<\sqrt n\) have nonzero weight, so \eqref{eq:Gn} is a finite
+optimization problem.
+
+\begin{lemma}[The model lower bound]\label{lem:model-lower}
+For every compatible family \(\Ucal\), the set
+\begin{equation}\label{eq:lift}
+  A_n(\Ucal)=
+  \left\{qu:\sqrt n<q\leq n\text{ prime},\
+     u\in U_{\floor{n/q}}\right\}
+\end{equation}
+is admissible for \(g_3(n)\).  Consequently \(G(n)\leq g_3(n)\).
+\end{lemma}
+
+\begin{proof}
+If \(u\leq n/q<\sqrt n\), then \(q\) is the unique prime divisor of \(qu\)
+exceeding \(\sqrt n\).  In particular, the parametrization in
+\eqref{eq:lift} is injective.
+
+Consider a product of two members of \(A_n(\Ucal)\).  If their large primes
+are distinct, say \(q\) and \(Q\), every representation identifies which
+factor contains \(q\) and which contains \(Q\).  It therefore injects into
+\[
+  U_{\floor{n/q}}\times U_{\floor{n/Q}},
+\]
+and compatibility permits at most two ordered cofactor pairs.  If both
+large primes equal \(q\), representations correspond to unordered
+off-diagonal factorizations inside one \(U_j\), of which there is at most
+one.  All factor pairs counted here consist of distinct integers, as
+required in the definition of \(g_3(n)\).
+\end{proof}
+
+The reverse inequality, up to the required error, is the structural heart
+of the proof.
+
+\begin{theorem}[Structural reduction]\label{thm:structural}
+As \(n\to\infty\),
+\[
+  g_3(n)=G(n)+o\left(\frac n{\log n}\right).
+\]
+\end{theorem}
+
+\section{A complete-box estimate}\label{sec:box}
+
+Let \(K^{(3)}_{2,2,2}\) denote the complete tripartite \(3\)-uniform
+hypergraph with two vertices in each part.
+
+\begin{lemma}[Unbalanced complete-box bound]\label{lem:box}
+If a tripartite \(3\)-uniform hypergraph \(H\), with positive part sizes
+\(n_1,n_2,n_3\), contains no \(K^{(3)}_{2,2,2}\), then
+\[
+  e(H)\ll
+  \frac{n_1n_2n_3}{\min(n_1,n_2,n_3)^{1/4}}.
+\]
+\end{lemma}
+
+\begin{proof}
+Write the part sizes as \(x\leq y\leq z\), and let \(d(u,v)\) be the
+codegree of \((u,v)\in Y\times Z\) into the smallest part.  For each pair of
+vertices in the smallest part, its common link in \(Y\times Z\) is
+\(C_4\)-free.  Summing the K\H{o}v\'ari--S\'os--Tur\'an bound
+\cite{KovariSosTuran1954} over those pairs gives
+\[
+  S:=\sum_{Y\times Z}\binom{d(u,v)}2\leq x^2z\sqrt y.
+\]
+Cauchy--Schwarz then gives
+\[
+  \frac{e(H)^2}{yz}
+  \leq\sum_{Y\times Z}d(u,v)^2
+  =e(H)+2S.
+\]
+Therefore
+\[
+  e(H)\leq yz+\sqrt2\,xy^{3/4}z
+  \leq(1+\sqrt2)x^{3/4}yz,
+\]
+as required.
+\end{proof}
+
+\section{Structural reduction}\label{sec:structural}
+
+Put \(L=\log n\) and
+\begin{equation}\label{eq:parameters}
+  Y=L^{24},\qquad Z=L,\qquad W=L^{1/8},\qquad R=Y^4=L^{96}.
+\end{equation}
+For large \(n\),
+\[
+  1<W<Z<Y<R<\sqrt n.
+\]
+
+We use one simple observation repeatedly.  Suppose triples
+\((x,y,z)\) parametrize distinct elements \(xyz\in A\).  Their tripartite
+hypergraph cannot contain \(K^{(3)}_{2,2,2}\): the eight elements in such a
+cube would give the four complementary representations
+\[
+\begin{split}
+ &(x_0y_0z_0)(x_1y_1z_1),\qquad
+ (x_0y_0z_1)(x_1y_1z_0),\\
+ &(x_0y_1z_0)(x_1y_0z_1),\qquad
+ (x_0y_1z_1)(x_1y_0z_0)
+\end{split}
+\]
+of the same integer.  Injectivity makes these four distinct-factor
+representations.
+
+\begin{lemma}[Pruning to two normal forms]\label{lem:pruning}
+After deleting \(o(n/L)\) elements from an admissible \(A\subseteq[n]\),
+every remaining element has exactly one of the forms
+\[
+\begin{array}{ll}
+{\rm (S)}& qt,\quad q>\sqrt n\text{ prime},\quad
+                 t<R,\quad P^+(t)\leq Z;\\[2mm]
+{\rm (P)}& sqr,\quad s<W,\quad q>r>Z\text{ primes},\quad q>Y.
+\end{array}
+\]
+All estimates are uniform in \(A\).
+\end{lemma}
+
+\begin{proof}
+First discard elements having a factorization \(xyz\) with
+\(x,y,z>Y\).  Choose one such factorization for each element and place its
+coordinates in full dyadic ambient intervals.  By the observation above and
+Lemma~\ref{lem:box}, each box contains \(O(nY^{-1/4})\) elements.  There are
+\(O(L^3)\) boxes, so the discarded set has size
+\[
+  O(nL^3Y^{-1/4})=O(n/L^3)=o(n/L).
+\]
+
+A remaining \(Y\)-smooth integer is at most \(Y^6\).  Otherwise we could
+greedily extract two divisors in \((Y,Y^2]\), leaving a third factor larger
+than \(Y\).  Thus all remaining \(Y\)-smooth integers contribute at most
+\[
+  Y^6=L^{144}=o(n/L).
+\]
+
+For every other element put \(q=P^+(a)>Y\) and \(t=a/q\).  If \(t\) is
+\(Z\)-smooth, then \(t<R\).  Indeed, if \(t\geq Y^4\), a minimal subproduct
+\(d>Y\) satisfies \(d\leq YZ<Y^2\), and \(q,d,t/d\) are three factors
+larger than \(Y\).  The cases \(q\leq\sqrt n\) contribute at most
+\(R\pi(\sqrt n)=o(n/L)\), leaving form \({\rm (S)}\).
+
+If \(t\) is not \(Z\)-smooth, put \(r=P^+(t)>Z\) and \(s=t/r\).  Then
+\(q\geq r\) and \(s<R\).  To see the latter, suppose \(s\geq Y^4\).
+If \(r>Y\), the factors \(q,r,s\) are all larger than \(Y\).  If
+\(r\leq Y\), then \(s\) is \(Y\)-smooth; a minimal divisor
+\(Y<d\leq Y^2\) makes \(q,d,rs/d\) three factors larger than \(Y\).
+Both cases were already discarded.  The case \(q=r\) contributes at most
+\(R\pi(\sqrt n)=o(n/L)\).
+
+It remains to discard \(W\leq s<R\).  The triples \((s,q,r)\) are
+canonical, since \(q=P^+(a)\), \(r=P^+(a/q)\), and \(q>r\); hence they
+parametrize their products injectively.  In a dyadic box of scales
+\(S,Q,P\), the three full ambient parts have upper orders
+\[
+  O(S),\qquad O(Q/\log Q),\qquad O(P/\log P),
+\]
+and the prime number theorem in dyadic intervals gives the corresponding
+lower orders for the two prime parts.  Since \(S\geq W\), \(P\geq Z\), and
+\(Q\geq Y\), each part has size \(\gg W\).  Lemma~\ref{lem:box} gives
+\[
+  e(S,Q,P)\ll
+  \frac{SPQ}{\log P\log Q}\,W^{-1/4}.
+\]
+In every nonempty box \(Q\gg P\), so \(P\ll\sqrt{n/S}\) and therefore
+\(\log(n/(SP))\geq\tfrac12\log(n/S)+O(1)\asymp L\).  For fixed \(S,P\),
+summing the geometric \(Q\)-scales gives
+\[
+  \sum_Q e(S,Q,P)\ll\frac n{L\log P}\,W^{-1/4}.
+\]
+There are \(O(\log\log n)\) dyadic \(S\)-scales, and summing
+\(1/\log P\) over the dyadic \(P\)-scales contributes another
+\(O(\log\log n)\).  Hence
+\[
+  \sum_{S,Q,P}e(S,Q,P)
+  \ll \frac nL\,W^{-1/4}(\log\log n)^2=o(n/L).
+\]
+The remaining elements are exactly those of forms \({\rm (S)}\) and
+\({\rm (P)}\).
+\end{proof}
+
+\subsection{The semiprime form}
+
+Let \(A_{\rm sp}\) be the elements of form \({\rm (P)}\), and for \(s<W\)
+put
+\[
+  I_s=\{qr:sqr\in A_{\rm sp}\}.
+\]
+The canonical factorization is unique, so
+\[
+  |A_{\rm sp}|=\sum_{s<W}|I_s|.
+\]
+
+\begin{lemma}[Pairwise overlap]\label{lem:overlap}
+For \(s\neq t<W\),
+\[
+  |I_s\cap I_t|
+  \ll \frac{n}{L\sqrt{Z\log Z}}+\frac{\sqrt n}{L}.
+\]
+\end{lemma}
+
+\begin{proof}
+Use two labeled prime classes and orient every edge \(qr\in I_s\cap I_t\)
+by \(q>r\).  The resulting simple bipartite graph is \(C_4\)-free.  A cycle
+with edges \(q_ir_j\), \(i,j\in\{1,2\}\), would put the eight integers
+\(sq_ir_j,tq_ir_j\) in \(A\), and the four complementary pairs would all
+represent \(stq_1q_2r_1r_2\).  Since
+\(s,t<W<Z<q_i,r_j\), all eight integers are distinct.  Moreover, all four
+edges satisfy \(q_i>r_j\), so the two labeled vertex classes are numerically
+disjoint.  Thus these are four genuine distinct-factor representations,
+a contradiction.
+
+Fix a dyadic scale \(P\) for the smaller prime.  The two vertex classes
+have sizes \(O(P/\log P)\) and \(O(n/(PL))\).  The \(C_4\)-free estimate
+therefore gives
+\[
+  O\left(\frac{n}{L\sqrt{P\log P}}+\frac{P}{\log P}\right)
+\]
+edges.  Summing over dyadic \(P\geq Z\) proves the lemma.
+\end{proof}
+
+Bonferroni's inequality and Lemma~\ref{lem:overlap} give
+\[
+\begin{aligned}
+ |A_{\rm sp}|
+ &\leq \left|\bigcup_{s<W}I_s\right|
+   +O\left(W^2\left(
+      \frac{n}{L\sqrt{Z\log Z}}+\frac{\sqrt n}{L}\right)\right)\\
+ &=\left|\bigcup_{s<W}I_s\right|+o(n/L),
+\end{aligned}
+\]
+because \(W^2=L^{1/4}\) and \(Z=L\).  The union is contained in the set of semiprimes
+\(qr\leq n\) with \(q>Y\) and \(r>Z\).  Those with both primes at most
+\(\sqrt n\) contribute \(O(n/L^2)\).  Otherwise the larger prime \(Q\)
+exceeds \(\sqrt n\); if \(j=\lfloor n/Q\rfloor\), the other prime lies in
+\((Z,j]\).  Hence
+\begin{equation}\label{eq:Asp}
+ |A_{\rm sp}|
+ \leq \sum_{j\geq1}N_j(n)
+       \bigl(\pi(j)-\pi(\min(j,Z))\bigr)+o(n/L).
+\end{equation}
+
+\subsection{The smooth form}
+
+Let \(A_{\rm sm}\) be the elements of form \({\rm (S)}\), and define
+\[
+  T_q=\{t:qt\in A_{\rm sm}\}\qquad(q>\sqrt n).
+\]
+For distinct primes \(q,Q\),
+\begin{equation}\label{eq:cross}
+  r_{T_q,T_Q}(m)\leq2.
+\end{equation}
+Indeed, three ordered pairs \((u,v)\) with \(uv=m\) would give three
+representations \((qu)(Qv)=qQm\).  These representations have unequal
+factors and are distinct because \(q,Q>\sqrt n>R\).
+
+An \emph{internal collision} is a pair of distinct unordered
+\(2\)-multisets
+\[
+  \{a,b\}\neq\{c,d\},\qquad ab=cd,\qquad a,b,c,d\leq R.
+\]
+Diagonals such as \(\{a,a\}\) are allowed.  A fixed collision occurs in at
+most one fiber.  If it occurred in both \(T_q\) and \(T_Q\), two
+off-diagonal factorizations would give four ordered cross pairs, while a
+diagonal together with an off-diagonal factorization would give three.
+Both contradict \eqref{eq:cross}.
+
+There are at most \(R^4\) possible collisions.  For each collision that
+occurs, delete one tagged element \((q,x)\), meaning the copy of a support
+value \(x\) in the unique fiber \(T_q\) containing that collision, and call
+the cleaned fibers \(S_q\).  Then
+\begin{equation}\label{eq:cleaned}
+  \sum_q|T_q\setminus S_q|\leq R^4=o(n/L),
+\end{equation}
+and the whole family \((S_q)\), including each individual fiber, is
+compatible.
+
+For each \(j\) with \(N_j(n)>0\), choose \(S_j\) of maximum size among the
+cleaned fibers in the bucket \(\{q:\lfloor n/q\rfloor=j\}\); if
+\(N_j(n)=0\), put \(S_j=\varnothing\).  Choices from distinct nonempty
+buckets come from distinct prime fibers, so compatibility is preserved, and
+\[
+  |A_{\rm sm}|
+  \leq\sum_jN_j(n)|S_j|+o(n/L).
+\]
+Finally set
+\[
+  U_j=S_j\cup\{p:Z<p\leq j,\ p\text{ prime}\}.
+\]
+The two parts are disjoint.  The family \((U_j)\) is compatible because a
+product contains zero, one, or two prime factors exceeding \(Z\); these
+cases cannot collide, and compatibility or unique factorization gives at
+most two orientations within each case.  Thus
+\[
+  |U_j|=|S_j|+\pi(j)-\pi(\min(j,Z)).
+\]
+
+Restoring the \(o(n/L)\) elements deleted in Lemma~\ref{lem:pruning}, and
+combining this identity with \eqref{eq:Asp} and \eqref{eq:cleaned}, gives
+\[
+  |A|\leq\sum_jN_j(n)|U_j|+o(n/L)\leq G(n)+o(n/L).
+\]
+Together with Lemma~\ref{lem:model-lower}, this proves
+Theorem~\ref{thm:structural}.
+
+\section{The limit of the cofactor model}\label{sec:limit}
+
+For a compatible family \(\Ucal=(U_j)\), put
+\[
+  w_j=\frac1{j(j+1)},\qquad
+  e_j(\Ucal)=|U_j|-1-\pi(j).
+\]
+
+\begin{definition}\label{def:gamma}
+Define
+\[
+  \Gamma=\sup_{\Ucal\ {\rm compatible}}
+  \sum_{j\geq1}w_je_j(\Ucal),
+\]
+where a sum is assigned the value \(-\infty\) if its negative part diverges.
+\end{definition}
+
+Compatibility with \(i=j\) makes each \(U_j\) a multiplicative Sidon set
+with diagonals allowed.  The classical bound of Erd\H{o}s
+\cite{Erdos1938Sequences}, also recorded in
+\cite[p.~252]{Erdos1964Multiplicative}, is
+\[
+  |U_j|\leq\pi(j)+O(j^{3/4})
+\]
+and therefore gives
+\begin{equation}\label{eq:positive}
+  e_j^+\ll j^{3/4},
+  \qquad \sum_{j\geq1}w_je_j^+<\infty,
+\end{equation}
+uniformly over compatible families.  The family consisting of \(1\) and all
+primes has \(e_j=0\), so \(0\leq\Gamma<\infty\).
+
+\begin{proposition}[An explicit upper bound]\label{prop:explicit-upper}
+One has
+\[
+  \Gamma
+  \leq \zeta\left(\frac76\right)
+      +\frac32\zeta\left(\frac43\right)
+  <13.
+\]
+Consequently
+\[
+  1+M+\Gamma<15.
+\]
+\end{proposition}
+
+\begin{proof}
+We use the standard factor-graph argument, as in
+\cite[Section~3.2]{LiuPach2019}.  Let \(U\subseteq[N]\) be
+multiplicative Sidon.
+
+First consider those \(a\in U\) having a prime divisor
+\(p>N^{2/3}\).  Such a prime is unique, and we write \(a=pb\), where
+\(b<N^{1/3}\).  Form the bipartite graph whose edges are these pairs
+\((p,b)\).  Distinct edges represent distinct integers, and the graph is
+\(C_4\)-free: a four-cycle would give four distinct elements satisfying
+\[
+  (pb)(qc)=(pc)(qb).
+\]
+If \(d_p\) is the degree of \(p\), then
+\[
+  \sum_p\binom{d_p}{2}
+  \leq\binom{\floor{N^{1/3}}}{2}.
+\]
+Since \(d_p-1\leq\binom{d_p}{2}\), this part of \(U\) has at most
+\[
+  \pi(N)-\pi(N^{2/3})+\frac12N^{2/3}
+\]
+elements.
+
+Every remaining \(a\leq N\) has a factorization
+\[
+  a=uv,\qquad v\leq u\leq N^{2/3}.
+\]
+Indeed, this is immediate when \(a\leq N^{2/3}\).  Otherwise, if \(a\)
+has a prime divisor \(N^{1/3}\leq p\leq N^{2/3}\), take the factors \(p\) and
+\(a/p\).  If all prime divisors are smaller than \(N^{1/3}\), multiply
+prime factors until the product first exceeds \(N^{1/3}\); that product
+and its complementary factor are both at most \(N^{2/3}\).  After
+interchanging the factors if necessary, also
+\(v\leq\sqrt a\leq N^{1/2}\).
+
+Fix one such factorization for each remaining element and form the
+corresponding bipartite graph.  Its two vertex classes have sizes at most
+\(\floor{N^{2/3}}\) and \(\floor{N^{1/2}}\).  Distinct edges represent distinct
+integers, so a four-cycle would again contradict the multiplicative
+Sidon property.  The standard \(C_4\)-free estimate
+\cite{KovariSosTuran1954} gives
+\[
+  e\leq N^{1/2}\sqrt{N^{2/3}}+N^{2/3}
+    =N^{5/6}+N^{2/3}.
+\]
+Combining the two parts gives
+\[
+  |U|-1-\pi(N)
+  \leq N^{5/6}+\frac32N^{2/3}.
+\]
+
+Applying this to every fiber \(U_j\), and using \(w_j<j^{-2}\), gives
+\[
+  \Gamma
+  \leq\zeta\left(\frac76\right)
+       +\frac32\zeta\left(\frac43\right).
+\]
+For \(s>1\),
+\[
+  \zeta(s)<1+\frac1{s-1},
+\]
+so
+\[
+  \Gamma<7+\frac32\cdot4=13.
+\]
+Finally, the explicit cutoff estimate in the accompanying Lean development
+gives \(M<933/1000<1\), and therefore
+\[
+  1+M+\Gamma<15.
+\]
+\end{proof}
+
+\begin{lemma}[Canonical extension]\label{lem:extension}
+Every compatible prefix \(U_1,\ldots,U_J\) extends compatibly by
+\[
+  U_j=U_J\cup\{p:J<p\leq j,\ p\text{ prime}\}\qquad(j>J).
+\]
+For this extension, \(e_j=e_J\) for \(j>J\).
+\end{lemma}
+
+\begin{proof}
+Old elements are at most \(J\), while every new prime exceeds \(J\).
+For two fibers, products with no new prime are controlled by
+\(r_{U_i,U_J}\) or \(r_{U_J,U_J}\), hence by the original prefix.  With one
+new prime, unique factorization determines that prime and the old factor,
+leaving at most two orientations; with two new primes it again leaves at
+most two.  Finally,
+\[
+ |U_j|=|U_J|+\pi(j)-\pi(J),
+\]
+so \(e_j=e_J\).
+\end{proof}
+
+Since \(\sum_{j>J}w_j=1/(J+1)\), the extension lemma implies
+\begin{equation}\label{eq:prefix}
+  \sum_{j\leq J}w_je_j
+  \leq\Gamma+\frac{1+\pi(J)}{J+1}
+  =\Gamma+O(1/\log J).
+\end{equation}
+Set
+\[
+  B(n)=\sum_{j\geq1}N_j(n)(1+\pi(j)).
+\]
+
+\begin{proposition}\label{prop:model-limit}
+As \(n\to\infty\),
+\[
+  G(n)=B(n)+(\Gamma+o(1))\frac n{\log n}.
+\]
+\end{proposition}
+
+\begin{proof}
+For fixed \(j\), the prime number theorem gives
+\begin{equation}\label{eq:weight-limit}
+  \frac{\log n}{n}N_j(n)\longrightarrow
+  \frac1j-\frac1{j+1}=w_j.
+\end{equation}
+The positive tails are uniform.  In a dyadic block \(K\leq j<2K\),
+\eqref{eq:positive} and Chebyshev's bound give
+\[
+  \sum_{K\leq j<2K}N_j(n)e_j^+
+  \ll K^{3/4}\pi(n/K)
+  \ll\frac n{\log n}K^{-1/4}.
+\]
+Summing the blocks yields
+\begin{equation}\label{eq:tail}
+  \frac{\log n}{n}\sum_{j>J}N_j(n)e_j^+
+  \ll J^{-1/4}.
+\end{equation}
+
+Apply this to a family attaining \(G(n)\).  For fixed \(J\),
+\eqref{eq:weight-limit} is uniform over its prefix because
+\(|e_j|\leq2j+1\).  Hence \eqref{eq:prefix} and \eqref{eq:tail} give
+\[
+  \limsup_{n\to\infty}\frac{\log n}{n}(G(n)-B(n))
+  \leq\Gamma+O(1/\log J)+O(J^{-1/4}).
+\]
+Let \(J\to\infty\).
+
+Conversely, choose a compatible family whose defining sum exceeds
+\(\Gamma-\varepsilon\).  Its defining series is absolutely convergent: the
+positive part is finite by \eqref{eq:positive}, and the negative part is
+finite by Definition~\ref{def:gamma}.  Moreover, the trivial lower bound
+\(e_J\geq-1-\pi(J)\),
+\[
+  \frac{|e_J|}{J+1}\ll J^{-1/4}+\frac1{\log J}.
+\]
+Choose \(J\) so that
+\[
+  \left|\sum_{j>J}w_je_j\right|<\varepsilon
+  \qquad\text{and}\qquad
+  \frac{|e_J|}{J+1}<\varepsilon.
+\]
+The canonical extension of this prefix then has weighted value
+\[
+  \sum_{j\leq J}w_je_j+\frac{e_J}{J+1}
+  >\Gamma-3\varepsilon.
+\]
+For this fixed extension,
+\[
+  \sum_{j>J}N_j(n)
+  =\pi\left(\frac n{J+1}\right)-\pi(\sqrt n)
+\]
+once \(n>(J+1)^2\).  Together with \eqref{eq:weight-limit}, the prime number
+theorem gives
+\[
+  \frac{\log n}{n}\sum_jN_j(n)e_j
+  \longrightarrow\sum_jw_je_j.
+\]
+Thus the lower limit is at least
+\(\Gamma-3\varepsilon\).  Letting \(\varepsilon\downarrow0\) proves the
+proposition.
+\end{proof}
+
+It remains to evaluate \(B(n)\).  Let \(\pi_2(n)\) count products
+\(pq\leq n\) with \(p\leq q\) prime, including squares.  Direct counting
+gives
+\begin{align}
+  \sum_jN_j(n)&=\pi(n)-\pi(\sqrt n),\label{eq:prime-count}\\
+  \sum_jN_j(n)\pi(j)
+   &=\pi_2(n)-\frac{\pi(\sqrt n)(\pi(\sqrt n)+1)}2.
+   \label{eq:semiprime-count}
+\end{align}
+The semiprime asymptotic
+\cite[Theorem~1, equation~(17)]{CrisanErban2021} is
+\[
+  \pi_2(n)
+  =\frac{n\log\log n}{\log n}
+   +(M+o(1))\frac n{\log n}.
+\]
+Consequently,
+\begin{equation}\label{eq:B-final}
+  B(n)=\frac{n\log\log n}{\log n}
+       +(1+M+o(1))\frac n{\log n}.
+\end{equation}
+Theorem~\ref{thm:structural}, Proposition~\ref{prop:model-limit}, and
+\eqref{eq:B-final} prove the asymptotic formula in
+Theorem~\ref{thm:main}.  The bound \(\Gamma\geq4/15\) is proved next.
+
+\section{An explicit lower bound}\label{sec:certificate}
+
+Define the following seven fibers:
+\[
+\begin{array}{lll}
+  \mathsf A=\{1\},&
+  \mathsf B=\{1,2\},&
+  \mathsf C=\{1,2,3\},\\[2pt]
+  \mathsf D=\{1,3,4,5\},&
+  \mathsf E=\{1,3,4,5,6\},&
+  \mathsf F=\{1,3,4,5,6,7\},\\[2pt]
+  &&\mathsf G=\{2,3,5,7,8,9,10\}.
+\end{array}
+\]
+Assign the fibers
+\[
+  \mathsf A,\mathsf B,\mathsf C,\mathsf C,\mathsf D,
+  \mathsf E,\mathsf F,\mathsf F,\mathsf F,\mathsf G
+\]
+to \(j=1,\ldots,10\).  The complete multiplication certificate in
+Appendix~\ref{app:certificate} proves that this prefix is compatible.  Its excess
+sequence is
+\[
+  (e_1,\ldots,e_{10})=(0,0,0,0,0,1,1,1,1,2).
+\]
+The weighted prefix value is
+\[
+  \frac1{42}+\frac1{56}+\frac1{72}+\frac1{90}+\frac1{55}
+  =\frac{14}{165}.
+\]
+The canonical extension from \(\mathsf G\) has \(e_j=2\) for \(j>10\),
+and contributes \(2/11\).  Therefore
+\begin{equation}\label{eq:four-fifteenths}
+  \Gamma\geq\frac{14}{165}+\frac2{11}
+  =\frac4{15}.
+\end{equation}
+This completes the proof of Theorem~\ref{thm:main}.
+
+\appendix
+
+\section{The multiplication certificate}\label{app:certificate}
+
+For two fibers \(\mathsf X,\mathsf Y\), let
+\[
+  D(\mathsf X,\mathsf Y)
+  =\{m:r_{\mathsf X,\mathsf Y}(m)=2\}.
+\]
+For each unordered pair of fiber types, the following table lists all
+products occurring more than once.  Every listed product has convolution
+coefficient exactly two, and direct multiplication shows that every
+remaining product occurs at most once.  Thus all \(28\) fiber-pair
+convolutions satisfy the compatibility condition.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.12}
+\noindent
+\begin{tabularx}{\textwidth}{
+  >{\raggedright\arraybackslash}p{0.18\textwidth}
+  >{\raggedright\arraybackslash}X}
+\toprule
+Pair & Products with convolution coefficient exactly \(2\)\\
+\midrule
+\(\mathsf{AA},\mathsf{AB},\mathsf{AC},\)\newline
+\(\mathsf{AD},\mathsf{AE},\mathsf{AF},\mathsf{AG}\) & --\\
+\(\mathsf{BB}\) & \(2\)\\
+\(\mathsf{BC}\) & \(2\)\\
+\(\mathsf{BD}\) & --\\
+\(\mathsf{BE}\) & \(6\)\\
+\(\mathsf{BF}\) & \(6\)\\
+\(\mathsf{BG}\) & \(10\)\\
+\(\mathsf{CC}\) & \(2,3,6\)\\
+\(\mathsf{CD}\) & \(3\)\\
+\(\mathsf{CE}\), \(\mathsf{CF}\) & \(3,6,12\)\\
+\(\mathsf{CG}\) & \(6,9,10\)\\
+\(\mathsf{DD}\), \(\mathsf{DE}\), \(\mathsf{DF}\)
+  & \(3,4,5,12,15,20\)\\
+\(\mathsf{DG}\) & \(8,9,10,15,40\)\\
+\(\mathsf{EE}\), \(\mathsf{EF}\)
+  & \(3,4,5,6,12,15,18,20,24,30\)\\
+\(\mathsf{EG}\) & \(8,9,10,12,15,30,40\)\\
+\(\mathsf{FF}\)
+  & \(3,4,5,6,7,12,15,18,20,21,24,28,30,35,42\)\\
+\(\mathsf{FG}\)
+  & \(8,9,10,12,15,21,30,35,40\)\\
+\(\mathsf{GG}\)
+  & \(6,10,14,15,16,18,20,21,24,27,30,35,40,\)\newline
+    \(45,50,56,63,70,72,80,90\)\\
+\bottomrule
+\end{tabularx}
+\endgroup
+
+% The default AMS shorthand for repeated authors is a horizontal rule.
+% Here the only repeated author is Erd\H{o}s, so print his name in full.
+\providecommand{\bysame}{Paul Erd\H{o}s}
+\begingroup
+\footnotesize
+\bibliographystyle{amsplain}
+\bibliography{references}
+\endgroup
+
+\end{document}

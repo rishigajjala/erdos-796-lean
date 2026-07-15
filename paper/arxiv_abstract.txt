@@ -1,0 +1,12 @@
+Let $g_3(n)$ be the largest size of a set $A\subseteq[n]$ for which every
+integer has at most two representations $m=ab$ with $a,b\in A$ and $a<b$.
+We prove
+$$
+g_3(n)=\frac{n\log\log n}{\log n}
++\left(1+M+\Gamma+o(1)\right)\frac{n}{\log n},
+$$
+where $M$ is the Meissel--Mertens constant and $\Gamma$ is a finite constant
+defined by a discrete cofactor problem. This resolves a five-decade-old
+problem posed by Erdős. The initial proofs were generated and formalized in
+Lean by OpenAI's GPT 5.6 Sol; the authors have verified and rewritten proofs
+to enhance readability and provide additional context.
